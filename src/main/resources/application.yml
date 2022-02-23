@@ -1,0 +1,16 @@
+spring:
+  profiles:
+    include: local
+  application:
+    name: karrotcruit-homework
+  datasource:
+    url: jdbc:h2:~/simple-posts-board;AUTO_SERVER=TRUE
+    username: sa
+    password:
+    driver-class-name: org.h2.Driver
+
+
+logging:
+  level:
+    org.springframework.jdbc.core: debug
+    org.hibernate.SQL: debug
