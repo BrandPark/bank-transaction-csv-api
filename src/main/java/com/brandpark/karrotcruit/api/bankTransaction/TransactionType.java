@@ -1,4 +1,4 @@
-package com.brandpark.karrotcruit.api;
+package com.brandpark.karrotcruit.api.bankTransaction;
 
 import lombok.RequiredArgsConstructor;
 

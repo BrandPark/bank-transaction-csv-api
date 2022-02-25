@@ -1,6 +1,6 @@
 spring:
   profiles:
-    include: local
+    active: test
   application:
     name: karrotcruit-homework
   datasource:
