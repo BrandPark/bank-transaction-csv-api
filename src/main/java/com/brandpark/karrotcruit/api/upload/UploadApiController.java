@@ -19,16 +19,16 @@ public class UploadApiController {
     @PostMapping("/persist-transaction-list-csv")
     public ResponseEntity persistTransactionListUsingCsv(@RequestParam("file") MultipartFile file) {
 
-        if (!isCsvFile(file)) {
-            throw new IllegalFileFormatException("파일이 csv 타입이 아닙니다.");
-        }
+        validateRequest(file);
 
         long persistedRows = uploadService.persistTransactionListUsingCsv(file);
 
         return new ResponseEntity(persistedRows, HttpStatus.OK);
     }
 
-    private boolean isCsvFile(MultipartFile file) {
-        return file.getContentType().equals("text/csv");
+    private void validateRequest(MultipartFile file) {
+        if (file.getContentType() == null || !file.getContentType().equals("text/csv")) {
+            throw new IllegalFileFormatException("지원되지 않는 파일형식입니다. csv 파일만 가능합니다.");
+        }
     }
 }

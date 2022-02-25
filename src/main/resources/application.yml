@@ -4,7 +4,7 @@ spring:
   application:
     name: karrotcruit-homework
   datasource:
-    url: jdbc:h2:~/karrotcruit;AUTO_SERVER=TRUE;MODE=MYSQL
+    url: jdbc:h2:~/karrotcruit;AUTO_SERVER=TRUE
     username: sa
     password:
     driver-class-name: org.h2.Driver

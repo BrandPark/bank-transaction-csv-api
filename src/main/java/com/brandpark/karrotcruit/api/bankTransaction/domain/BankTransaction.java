@@ -1,16 +1,17 @@
 package com.brandpark.karrotcruit.api.bankTransaction.domain;
 
-import com.brandpark.karrotcruit.api.bankTransaction.BankCode;
-import com.brandpark.karrotcruit.api.bankTransaction.TransactionType;
+import com.brandpark.karrotcruit.api.bankTransaction.BankCodeConverter;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import org.springframework.data.domain.Persistable;
 
 import javax.persistence.*;
+import java.time.LocalDate;
 import java.util.Locale;
 
 @NoArgsConstructor
 @Getter
+@Table(name = "bank_transaction")
 @Entity
 public class BankTransaction implements Persistable<Long> {
 
@@ -27,15 +28,20 @@ public class BankTransaction implements Persistable<Long> {
     @Column(name="day", nullable = false)
     private int day;
 
+    @Column(name="transaction_date", nullable = false)
+    private LocalDate transactionDate;
+
     @Column(name="user_id", nullable = false)
     private Long userId;
 
+    @Convert(converter = BankCodeConverter.class)
     @Column(name="bank_code", nullable = false)
     private BankCode bankCode;
 
     @Column(name="transaction_amount", nullable = false)
     private long transactionAmount;
 
+    @Enumerated(EnumType.STRING)
     @Column(name="transaction_type", nullable = false)
     private TransactionType transactionType;
 
@@ -50,6 +56,7 @@ public class BankTransaction implements Persistable<Long> {
         bt.bankCode = BankCode.of(split[5]);
         bt.transactionAmount = Integer.parseInt(split[6]);
         bt.transactionType = TransactionType.valueOf(split[7].toUpperCase(Locale.ROOT));
+        bt.transactionDate = LocalDate.of(bt.year, bt.month, bt.day);
 
         return bt;
     }

@@ -1,4 +1,4 @@
-package com.brandpark.karrotcruit.api.bankTransaction;
+package com.brandpark.karrotcruit.api.bankTransaction.domain;
 
 import lombok.RequiredArgsConstructor;
 

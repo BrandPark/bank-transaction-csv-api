@@ -166,8 +166,8 @@ class UploadApiControllerTest {
         assertThat(all.size()).isEqualTo(csvRowCount);
 
         BankTransaction actual = all.get(0);
-        BankTransaction expected = BankTransaction.csvRowToEntity(record1.split(","));
+        String[] expectedCols = record1.split(",");
 
-        AssertUtil.assertBankTransaction(actual, expected);
+        AssertUtil.assertBankTransaction(actual, expectedCols);
     }
 }
