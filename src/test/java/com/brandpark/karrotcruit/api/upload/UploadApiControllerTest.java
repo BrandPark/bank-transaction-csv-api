@@ -1,9 +1,11 @@
 package com.brandpark.karrotcruit.api.upload;
 
-import com.brandpark.karrotcruit.AssertUtil;
-import com.brandpark.karrotcruit.api.bankTransaction.domain.BankTransaction;
-import com.brandpark.karrotcruit.api.bankTransaction.domain.BankTransactionRepository;
-import com.brandpark.karrotcruit.api.exception.ApiError;
+import com.brandpark.karrotcruit.util.AssertUtil;
+import com.brandpark.karrotcruit.api.bank_transaction.domain.BankTransaction;
+import com.brandpark.karrotcruit.api.bank_transaction.domain.BankTransactionRepository;
+import com.brandpark.karrotcruit.api.exception_handle.ApiError;
+import com.brandpark.karrotcruit.api.upload.exception.CsvColumnNotValidException;
+import com.brandpark.karrotcruit.api.upload.exception.IllegalFileFormatException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -17,7 +19,9 @@ import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.transaction.annotation.Transactional;
 
+import javax.persistence.EntityManager;
 import java.nio.charset.StandardCharsets;
+import java.text.SimpleDateFormat;
 import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -33,6 +37,7 @@ class UploadApiControllerTest {
     @Autowired MockMvc mockMvc;
     @Autowired BankTransactionRepository bankTransactionRepository;
     @Autowired ObjectMapper objectMapper;
+    @Autowired EntityManager entityManager;
 
     @DisplayName("csv 파일로부터 거래내역 저장 - 실패(csv 파일이 아닌 경우)")
     @Test
@@ -45,13 +50,14 @@ class UploadApiControllerTest {
                 = new MockMultipartFile("file", "transaction.txt", MediaType.TEXT_PLAIN_VALUE, record.getBytes(StandardCharsets.UTF_8));
 
         // when
-        mockMvc.perform(multipart("/api/v1/persist-transaction-list-csv")
+        mockMvc.perform(multipart("/api/v1/bank-transactions/persist-csv")
                         .file(notCsvFile))
                 .andExpect(status().isBadRequest())
                 .andExpect(result -> {
 
                     assertThat(result.getResolvedException()).isInstanceOf(IllegalFileFormatException.class);
 
+                    objectMapper.setDateFormat(new SimpleDateFormat("yyyy-MM-dd HH:mm:ss"));
                     ApiError errorResponse = objectMapper.readValue(result.getResponse().getContentAsString(StandardCharsets.UTF_8), ApiError.class);
 
                     assertThat(errorResponse.getStatus()).isEqualTo(HttpStatus.BAD_REQUEST);
@@ -59,24 +65,25 @@ class UploadApiControllerTest {
                 });
     }
 
-    @DisplayName("csv 파일로부터 거래내역 저장 - 실패(비어있는 컬럼이 있는 경우)")
+    @DisplayName("csv 파일로부터 거래내역 저장 - 실패(컬럼이 하나 누락된 경우)")
     @Test
-    public void BankTransactionPersistFromCsvFile_Fail_When_ExistsBlankColumn() throws Exception {
+    public void BankTransactionPersistFromCsvFile_Fail_When_InvalidColumnCount() throws Exception {
 
         // given
-        String invalidRecord = "1,2021,1,1,4,,29000,DEPOSIT";   // 은행코드가 비어있다.
+        String invalidRecord = "1,2021,1,1,4,29000,DEPOSIT";   // 은행코드가 들어가지 않아 컬럼이 하나 부족하다.
 
         MockMultipartFile csvFile
                 = new MockMultipartFile("file", "transaction.csv", "text/csv", invalidRecord.getBytes(StandardCharsets.UTF_8));
 
         // when
-        mockMvc.perform(multipart("/api/v1/persist-transaction-list-csv")
+        mockMvc.perform(multipart("/api/v1/bank-transactions/persist-csv")
                         .file(csvFile))
                 .andExpect(status().isBadRequest())
                 .andExpect(result -> {
 
                     assertThat(result.getResolvedException()).isInstanceOf(CsvColumnNotValidException.class);
 
+                    objectMapper.setDateFormat(new SimpleDateFormat("yyyy-MM-dd HH:mm:ss"));
                     ApiError errorResponse = objectMapper.readValue(result.getResponse().getContentAsString(StandardCharsets.UTF_8), ApiError.class);
 
                     assertThat(errorResponse.getStatus()).isEqualTo(HttpStatus.BAD_REQUEST);
@@ -95,13 +102,14 @@ class UploadApiControllerTest {
                 = new MockMultipartFile("file", "transaction.csv", "text/csv", invalidRecord.getBytes(StandardCharsets.UTF_8));
 
         // when
-        mockMvc.perform(multipart("/api/v1/persist-transaction-list-csv")
+        mockMvc.perform(multipart("/api/v1/bank-transactions/persist-csv")
                         .file(csvFile))
                 .andExpect(status().isBadRequest())
                 .andExpect(result -> {
 
                     assertThat(result.getResolvedException()).isInstanceOf(CsvColumnNotValidException.class);
 
+                    objectMapper.setDateFormat(new SimpleDateFormat("yyyy-MM-dd HH:mm:ss"));
                     ApiError errorResponse = objectMapper.readValue(result.getResponse().getContentAsString(StandardCharsets.UTF_8), ApiError.class);
 
                     assertThat(errorResponse.getStatus()).isEqualTo(HttpStatus.BAD_REQUEST);
@@ -120,13 +128,14 @@ class UploadApiControllerTest {
                 = new MockMultipartFile("file", "transaction.csv", "text/csv", invalidRecord.getBytes(StandardCharsets.UTF_8));
 
         // when
-        mockMvc.perform(multipart("/api/v1/persist-transaction-list-csv")
+        mockMvc.perform(multipart("/api/v1/bank-transactions/persist-csv")
                         .file(notCsvFile))
                 .andExpect(status().isBadRequest())
                 .andExpect(result -> {
 
                     assertThat(result.getResolvedException()).isInstanceOf(CsvColumnNotValidException.class);
 
+                    objectMapper.setDateFormat(new SimpleDateFormat("yyyy-MM-dd HH:mm:ss"));
                     ApiError errorResponse = objectMapper.readValue(result.getResponse().getContentAsString(StandardCharsets.UTF_8), ApiError.class);
 
                     assertThat(errorResponse.getStatus()).isEqualTo(HttpStatus.BAD_REQUEST);
@@ -144,12 +153,12 @@ class UploadApiControllerTest {
         String totalRecord = record1 + "\n" + record2;
         int csvRowCount = 2;
 
-        MockMultipartFile notCsvFile
+        MockMultipartFile csvFile
                 = new MockMultipartFile("file", "transaction.csv", "text/csv", totalRecord.getBytes(StandardCharsets.UTF_8));
 
         // when
-        mockMvc.perform(multipart("/api/v1/persist-transaction-list-csv")
-                        .file(notCsvFile))
+        mockMvc.perform(multipart("/api/v1/bank-transactions/persist-csv")
+                        .file(csvFile))
                 .andExpect(status().isOk())
                 .andExpect(result -> {
 
@@ -160,10 +169,13 @@ class UploadApiControllerTest {
                     assertThat(persistedRowCnt).isEqualTo(csvRowCount);
                 });
 
+        entityManager.flush();
+        entityManager.clear();
+
         // then
         List<BankTransaction> all = bankTransactionRepository.findAll();
 
-        assertThat(all.size()).isEqualTo(csvRowCount);
+        assertThat(all).hasSize(csvRowCount);
 
         BankTransaction actual = all.get(0);
         String[] expectedCols = record1.split(",");

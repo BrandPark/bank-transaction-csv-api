@@ -1,4 +1,4 @@
-package com.brandpark.karrotcruit.api.bankTransaction.domain;
+package com.brandpark.karrotcruit.api.bank_transaction.domain;
 
 import org.springframework.data.jpa.repository.JpaRepository;
 

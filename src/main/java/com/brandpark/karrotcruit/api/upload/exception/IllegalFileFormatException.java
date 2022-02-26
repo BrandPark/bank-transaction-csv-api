@@ -1,4 +1,4 @@
-package com.brandpark.karrotcruit.api.upload;
+package com.brandpark.karrotcruit.api.upload.exception;
 
 public class IllegalFileFormatException extends RuntimeException {
     public IllegalFileFormatException() {

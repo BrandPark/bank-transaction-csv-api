@@ -1,4 +1,4 @@
-package com.brandpark.karrotcruit.api.bankTransaction.domain;
+package com.brandpark.karrotcruit.api.bank_transaction.domain;
 
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
@@ -16,7 +16,11 @@ public enum BankCode {
     private final String code;
     private final String bankName;
 
-    public static BankCode of(String code) {
+    public static BankCode ofCode(String code) {
+        if (code == null) {
+            throw new IllegalArgumentException("은행코드가 null 입니다.");
+        }
+
         for (BankCode bc : BankCode.values()) {
             if(bc.getCode().equals(code)) {
                 return bc;

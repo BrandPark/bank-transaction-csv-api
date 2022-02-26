@@ -1,10 +1,11 @@
-package com.brandpark.karrotcruit.api.bankTransaction;
+package com.brandpark.karrotcruit.api.bank_transaction;
 
-import com.brandpark.karrotcruit.api.bankTransaction.domain.BankTransaction;
-import com.brandpark.karrotcruit.api.bankTransaction.domain.TransactionType;
-import com.brandpark.karrotcruit.api.bankTransaction.dto.BankTransactionResponse;
-import com.brandpark.karrotcruit.api.bankTransaction.dto.PageResult;
-import com.brandpark.karrotcruit.api.bankTransaction.query.BankTransactionQueryRepository;
+import com.brandpark.karrotcruit.api.bank_transaction.domain.BankCode;
+import com.brandpark.karrotcruit.api.bank_transaction.domain.BankTransaction;
+import com.brandpark.karrotcruit.api.bank_transaction.domain.TransactionType;
+import com.brandpark.karrotcruit.api.bank_transaction.dto.BankTransactionResponse;
+import com.brandpark.karrotcruit.api.bank_transaction.dto.PageResult;
+import com.brandpark.karrotcruit.api.bank_transaction.query.BankTransactionQueryRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Pageable;
 import org.springframework.format.annotation.DateTimeFormat;
@@ -33,6 +34,18 @@ public class BankTransactionApiController {
         PageResult<BankTransaction> byUser = bankTransactionQueryRepository.findAllBankTransactionByUser(transactionDate, transactionType, pageable);
 
         return convertToResponsePageResult(byUser);
+    }
+
+    @GetMapping("/bank-transactions/by-bank")
+    public PageResult<BankTransactionResponse> getAllTransactionListByBank(
+            @RequestParam(value = "transaction_date", required = false) @DateTimeFormat(pattern = "yyyy-MM-dd") LocalDate transactionDate
+            , @RequestParam(value = "transaction_type", required = false) TransactionType transactionType
+            , @RequestParam(value = "bank_code", required = false) BankCode bankCode
+            , Pageable pageable) {
+
+        PageResult<BankTransaction> byBank = bankTransactionQueryRepository.findAllBankTransactionByBank(transactionDate, transactionType, bankCode, pageable);
+
+        return convertToResponsePageResult(byBank);
     }
 
     private PageResult<BankTransactionResponse> convertToResponsePageResult(PageResult<BankTransaction> page) {

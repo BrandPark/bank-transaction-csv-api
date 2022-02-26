@@ -1,4 +1,4 @@
-package com.brandpark.karrotcruit.api.bankTransaction.dto;
+package com.brandpark.karrotcruit.api.bank_transaction.dto;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import lombok.Data;
@@ -11,16 +11,15 @@ import java.util.List;
 @Data
 public class PageResult<T> {
 
-    private List<T> contents;
     @JsonIgnore
-    private int pageNumber;
-    @JsonIgnore
-    private int pageSize;
-    @JsonIgnore
-    private long offset;
     private Pageable pageable;
+    private int pageNumber;
+    private int pageSize;
+    private long offset;
     private int totalPages;
     private long totalElements;
+    private int contentsSize;
+    private List<T> contents;
 
     public static <T> PageResult<T> create(List<T> contents, Pageable pageable, long totalElements) {
         PageResult<T> ret = new PageResult<>();
@@ -30,8 +29,9 @@ public class PageResult<T> {
         ret.pageSize = pageable.getPageSize();
         ret.offset = pageable.getOffset();
         ret.pageable = pageable;
+        ret.contentsSize = contents.size();
         ret.totalElements = totalElements;
-        ret.totalPages = (int)(totalElements / pageable.getPageSize());
+        ret.totalPages = totalElements == 0 ? 0 : (int) ((totalElements - 1) / pageable.getPageSize()) + 1;
 
         return ret;
     }

@@ -1,19 +1,24 @@
-package com.brandpark.karrotcruit.api.bankTransaction.domain;
+package com.brandpark.karrotcruit.api.bank_transaction.domain;
 
-import com.brandpark.karrotcruit.api.bankTransaction.BankCodeConverter;
+import com.brandpark.karrotcruit.api.bank_transaction.BankCodePersistConverter;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
-import org.springframework.data.domain.Persistable;
 
 import javax.persistence.*;
 import java.time.LocalDate;
 import java.util.Locale;
 
-@NoArgsConstructor
+@Builder
+@NoArgsConstructor @AllArgsConstructor
 @Getter
-@Table(name = "bank_transaction")
+@Table(
+        name = "bank_transaction"
+        , indexes = @Index(name = "idx_bank_transaction", columnList = "transaction_date, transaction_type")
+)
 @Entity
-public class BankTransaction implements Persistable<Long> {
+public class BankTransaction {
 
     @Id
     @Column(name = "bank_transaction_id")
@@ -34,7 +39,7 @@ public class BankTransaction implements Persistable<Long> {
     @Column(name="user_id", nullable = false)
     private Long userId;
 
-    @Convert(converter = BankCodeConverter.class)
+    @Convert(converter = BankCodePersistConverter.class)
     @Column(name="bank_code", nullable = false)
     private BankCode bankCode;
 
@@ -53,25 +58,11 @@ public class BankTransaction implements Persistable<Long> {
         bt.month = Integer.parseInt(split[2]);
         bt.day = Integer.parseInt(split[3]);
         bt.userId = Long.parseLong(split[4]);
-        bt.bankCode = BankCode.of(split[5]);
+        bt.bankCode = BankCode.ofCode(split[5]);
         bt.transactionAmount = Integer.parseInt(split[6]);
         bt.transactionType = TransactionType.valueOf(split[7].toUpperCase(Locale.ROOT));
         bt.transactionDate = LocalDate.of(bt.year, bt.month, bt.day);
 
         return bt;
-    }
-
-    @Transient
-    private boolean isNew = true;
-
-    @PrePersist
-    @PostLoad
-    private void markNotNew() {
-        isNew = false;
-    }
-
-    @Override
-    public boolean isNew() {
-        return isNew;
     }
 }

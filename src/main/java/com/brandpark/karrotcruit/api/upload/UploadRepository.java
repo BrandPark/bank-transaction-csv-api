@@ -1,13 +1,15 @@
 package com.brandpark.karrotcruit.api.upload;
 
-import com.brandpark.karrotcruit.api.bankTransaction.domain.BankTransaction;
-import com.brandpark.karrotcruit.api.bankTransaction.domain.BankTransactionRepository;
+import com.brandpark.karrotcruit.api.bank_transaction.domain.BankTransaction;
+import com.brandpark.karrotcruit.api.upload.exception.CsvColumnNotValidException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Repository;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
+import javax.persistence.EntityManager;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
@@ -17,14 +19,16 @@ import java.util.List;
 
 @Slf4j
 @RequiredArgsConstructor
+@Transactional(readOnly = true)
 @Repository
 public class UploadRepository {
 
     @Value("${batchSize}")
     private int batchSize;
 
-    private final BankTransactionRepository bankTransactionRepository;
+    private final EntityManager entityManager;
 
+    @Transactional
     public long batchInsertBankTransactionFromCsvFile(MultipartFile file) {
 
         List<BankTransaction> batchInsertBuff = new ArrayList<>();
@@ -51,14 +55,14 @@ public class UploadRepository {
                     totalInsertedRow += batchInsertBuff.size();
                     count = batchSize;
 
-                    buffFlush(batchInsertBuff);
+                    flushBuff(batchInsertBuff);
                 }
             }
 
             if(!batchInsertBuff.isEmpty()) {
                 totalInsertedRow += batchInsertBuff.size();
 
-                buffFlush(batchInsertBuff);
+                flushBuff(batchInsertBuff);
             }
 
         } catch(IOException e) {
@@ -83,8 +87,12 @@ public class UploadRepository {
         }
     }
 
-    private void buffFlush(List<BankTransaction> batchInsertBuff) {
-        bankTransactionRepository.saveAll(batchInsertBuff);
+    private void flushBuff(List<BankTransaction> batchInsertBuff) {
+
+        for (BankTransaction entity : batchInsertBuff) {
+            entityManager.persist(entity);
+        }
+
         batchInsertBuff.clear();
     }
 }

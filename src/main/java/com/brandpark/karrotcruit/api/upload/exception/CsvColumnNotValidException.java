@@ -1,4 +1,4 @@
-package com.brandpark.karrotcruit.api.upload;
+package com.brandpark.karrotcruit.api.upload.exception;
 
 import lombok.Getter;
 

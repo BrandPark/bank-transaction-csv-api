@@ -1,6 +1,6 @@
-package com.brandpark.karrotcruit.api.bankTransaction.dto;
+package com.brandpark.karrotcruit.api.bank_transaction.dto;
 
-import com.brandpark.karrotcruit.api.bankTransaction.domain.BankTransaction;
+import com.brandpark.karrotcruit.api.bank_transaction.domain.BankTransaction;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 

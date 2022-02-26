@@ -1,5 +1,6 @@
 package com.brandpark.karrotcruit.api.upload;
 
+import com.brandpark.karrotcruit.api.upload.exception.IllegalFileFormatException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -16,7 +17,7 @@ public class UploadApiController {
 
     private final UploadService uploadService;
 
-    @PostMapping("/persist-transaction-list-csv")
+    @PostMapping("/bank-transactions/persist-csv")
     public ResponseEntity persistTransactionListUsingCsv(@RequestParam("file") MultipartFile file) {
 
         validateRequest(file);
