@@ -1,6 +1,7 @@
 package com.brandpark.karrotcruit.util;
 
 import com.brandpark.karrotcruit.api.bank_transaction.domain.BankTransaction;
+import com.brandpark.karrotcruit.api.bank_transaction.dto.BankTransactionResponse;
 import com.brandpark.karrotcruit.api.bank_transaction.dto.PageResult;
 import org.springframework.test.context.ActiveProfiles;
 
@@ -31,5 +32,26 @@ public abstract class AssertUtil {
         assertThat(actual.getTotalPages()).isEqualTo(expectedTotalPages);
         assertThat(actual.getTotalElements()).isEqualTo(totalElements);
         assertThat(actual.getContentsSize()).isEqualTo(expectedContentsSize);
+    }
+
+    public static void assertObjPropertyNotNull(BankTransactionResponse obj) {
+        assertThat(obj.getBankTransactionId()).isNotNull();
+        assertThat(obj.getTransactionDate()).isNotNull();
+        assertThat(obj.getBankCode()).isNotNull();
+        assertThat(obj.getUserId()).isNotNull();
+        assertThat(obj.getTransactionAmount()).isNotNull();
+        assertThat(obj.getTransactionType()).isNotNull();
+    }
+
+    public static void assertObjPropertyNotNull(BankTransaction obj) {
+        assertThat(obj.getId()).isNotNull();
+        assertThat(obj.getYear()).isNotNull();
+        assertThat(obj.getDay()).isNotNull();
+        assertThat(obj.getMonth()).isNotNull();
+        assertThat(obj.getTransactionDate()).isNotNull();
+        assertThat(obj.getUserId()).isNotNull();
+        assertThat(obj.getBankCode()).isNotNull();
+        assertThat(obj.getTransactionAmount()).isNotNull();
+        assertThat(obj.getTransactionType()).isNotNull();
     }
 }

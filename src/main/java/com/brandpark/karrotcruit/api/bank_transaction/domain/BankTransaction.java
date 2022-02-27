@@ -1,6 +1,6 @@
 package com.brandpark.karrotcruit.api.bank_transaction.domain;
 
-import com.brandpark.karrotcruit.api.bank_transaction.BankCodePersistConverter;
+import com.brandpark.karrotcruit.api.bank_transaction.converter.BankCodePersistConverter;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
@@ -51,6 +51,11 @@ public class BankTransaction {
     private TransactionType transactionType;
 
     public static BankTransaction csvRowToEntity(String[] split) {
+
+        if (split.length != 8) {
+            throw new IllegalArgumentException("컬럼의 수가 맞지 않습니다.");
+        }
+
         BankTransaction bt = new BankTransaction();
 
         bt.id = Long.parseLong(split[0]);

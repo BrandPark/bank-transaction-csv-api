@@ -1,4 +1,4 @@
-package com.brandpark.karrotcruit.api.bank_transaction;
+package com.brandpark.karrotcruit.api.bank_transaction.converter;
 
 import com.brandpark.karrotcruit.api.bank_transaction.domain.BankCode;
 import org.springframework.core.convert.converter.Converter;

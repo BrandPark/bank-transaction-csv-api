@@ -1,5 +1,6 @@
 package com.brandpark.karrotcruit.api.bank_transaction;
 
+import com.brandpark.karrotcruit.api.bank_transaction.domain.BankCode;
 import com.brandpark.karrotcruit.api.bank_transaction.domain.BankTransaction;
 import com.brandpark.karrotcruit.api.bank_transaction.domain.BankTransactionRepository;
 import com.brandpark.karrotcruit.api.bank_transaction.dto.BankTransactionResponse;
@@ -40,6 +41,8 @@ class BankTransactionApiControllerTest {
     @Autowired BankTransactionRepository bankTransactionRepository;
     @Autowired EntityManager entityManager;
 
+    final int PAGE_0 = 0;
+    final int PAGE_SIZE_10 = 10;
     int totalElements;
 
     @BeforeEach
@@ -81,15 +84,13 @@ class BankTransactionApiControllerTest {
         // given
         String invalidTransactionDate = "2022-01-1";    // yyyy-MM-dd 를 지키지 않는 형식
         String transactionType = "WITHDRAW";
-        String pageParam = "0";
-        String pageSizeParam = "10";
 
         // when, then
         mockMvc.perform(get("/api/v1/bank-transactions/by-user")
                         .param("transaction_date", invalidTransactionDate)
                         .param("transaction_type", transactionType)
-                        .param("page", pageParam)
-                        .param("size", pageSizeParam))
+                        .param("page", String.valueOf(PAGE_0))
+                        .param("size", String.valueOf(PAGE_SIZE_10)))
                 .andExpect(status().isBadRequest())
                 .andExpect(result -> {
                     assertThat(result.getResolvedException()).isInstanceOf(MethodArgumentTypeMismatchException.class);
@@ -100,22 +101,20 @@ class BankTransactionApiControllerTest {
                 });
     }
 
-    @DisplayName("유저별 입출금 내역 조회 - 실패(거래 타입이 올바르지 않은 경우)")
+    @DisplayName("유저별 입출금 내역 조회 - 실패(거래타입이 올바르지 않은 경우)")
     @Test
     public void RetrieveTransactionByUser_Fail_When_InvalidRequest_TransactionType() throws Exception {
 
         // given
         String transactionDate = "2022-01-01";
         String invalidTransactionType = "WITH";    // 거래타입이 올바르지 않은 경우
-        String pageParam = "0";
-        String pageSizeParam = "10";
 
         // when, then
         mockMvc.perform(get("/api/v1/bank-transactions/by-user")
                         .param("transaction_date", transactionDate)
                         .param("transaction_type", invalidTransactionType)
-                        .param("page", pageParam)
-                        .param("size", pageSizeParam))
+                        .param("page", String.valueOf(PAGE_0))
+                        .param("size", String.valueOf(PAGE_SIZE_10)))
                 .andExpect(status().isBadRequest())
                 .andExpect(result -> {
                     assertThat(result.getResolvedException()).isInstanceOf(MethodArgumentTypeMismatchException.class);
@@ -132,17 +131,15 @@ class BankTransactionApiControllerTest {
 
         // given
         String transactionDateParam = "2022-01-01";
-        int pageParam = 0;
-        int pageSizeParam = 10;
 
         int expectedTotalElements = 6;
-        int expectedContentsSize = 6;
+        int expectedContentsSize = expectedTotalElements;
 
         // when, then
         mockMvc.perform(get("/api/v1/bank-transactions/by-user")
                         .param("transaction_date", transactionDateParam)
-                        .param("page", String.valueOf(pageParam))
-                        .param("size", String.valueOf(pageSizeParam)))
+                        .param("page", String.valueOf(PAGE_0))
+                        .param("size", String.valueOf(PAGE_SIZE_10)))
                 .andExpect(status().isOk())
                 .andExpect(result -> {
 
@@ -151,14 +148,376 @@ class BankTransactionApiControllerTest {
                     PageResult<BankTransactionResponse> responsePage = objectMapper.readValue(responseJson, new TypeReference<>() {
                     });
 
-                    AssertUtil.assertPageResult(pageParam, pageSizeParam, expectedTotalElements, responsePage);
+                    // 페이지 정보 테스트
+                    AssertUtil.assertPageResult(PAGE_0, PAGE_SIZE_10, expectedTotalElements, responsePage);
 
+                    // 페이지 내용물 테스트
                     List<BankTransactionResponse> contents = responsePage.getContents();
 
                     assertThat(contents).hasSize(expectedContentsSize);
 
                     for (BankTransactionResponse content : contents) {
+                        AssertUtil.assertObjPropertyNotNull(content);
                         assertThat(content.getTransactionDate()).isEqualTo(transactionDateParam);
+                    }
+                });
+    }
+
+    @DisplayName("유저별 입출금 내역 조회 - 성공(거래타입으로 조회)")
+    @Test
+    public void RetrieveTransactionByUser_Success_When_UseTransactionType() throws Exception {
+
+        // given
+        String transactionTypeParam = "DEPOSIT";
+
+        int expectedTotalElements = 8;
+        int expectedContentsSize = expectedTotalElements;
+
+        // when, then
+        mockMvc.perform(get("/api/v1/bank-transactions/by-user")
+                        .param("transaction_type", transactionTypeParam)
+                        .param("page", String.valueOf(PAGE_0))
+                        .param("size", String.valueOf(PAGE_SIZE_10)))
+                .andExpect(status().isOk())
+                .andExpect(result -> {
+
+                    String responseJson = result.getResponse().getContentAsString(StandardCharsets.UTF_8);
+
+                    PageResult<BankTransactionResponse> responsePage = objectMapper.readValue(responseJson, new TypeReference<>() {
+                    });
+
+                    // 페이지 정보 테스트
+                    AssertUtil.assertPageResult(PAGE_0, PAGE_SIZE_10, expectedTotalElements, responsePage);
+
+                    // 페이지 내용물 테스트
+                    List<BankTransactionResponse> contents = responsePage.getContents();
+
+                    assertThat(contents).hasSize(expectedContentsSize);
+
+                    for (BankTransactionResponse content : contents) {
+                        AssertUtil.assertObjPropertyNotNull(content);
+                        assertThat(content.getTransactionType()).isEqualTo(transactionTypeParam);
+                    }
+                });
+    }
+
+    @DisplayName("유저별 입출금 내역 조회 - 성공(모든 조건을 사용하여 조회 : 거래일자, 거래타입)")
+    @Test
+    public void RetrieveTransactionByUser_Success_When_UseAllCondition() throws Exception {
+
+        // given
+        String transactionDateParam = "2022-01-02";
+        String transactionTypeParam = "WITHDRAW";
+
+        int expectedTotalElements = 2;
+        int expectedContentsSize = expectedTotalElements;
+
+        // when, then
+        mockMvc.perform(get("/api/v1/bank-transactions/by-user")
+                        .param("page", String.valueOf(PAGE_0))
+                        .param("size", String.valueOf(PAGE_SIZE_10))
+                        .param("transaction_date", transactionDateParam)
+                        .param("transaction_type", transactionTypeParam))
+                .andExpect(status().isOk())
+                .andExpect(result -> {
+
+                    String responseJson = result.getResponse().getContentAsString(StandardCharsets.UTF_8);
+
+                    PageResult<BankTransactionResponse> responsePage = objectMapper.readValue(responseJson, new TypeReference<>() {
+                    });
+
+                    // 페이지 정보 테스트
+                    AssertUtil.assertPageResult(PAGE_0, PAGE_SIZE_10, expectedTotalElements, responsePage);
+
+                    // 페이지 내용물 테스트
+                    List<BankTransactionResponse> contents = responsePage.getContents();
+
+                    assertThat(contents).hasSize(expectedContentsSize);
+
+                    for (BankTransactionResponse content : contents) {
+                        AssertUtil.assertObjPropertyNotNull(content);
+                        assertThat(content.getTransactionDate()).isEqualTo(transactionDateParam);
+                        assertThat(content.getTransactionType()).isEqualTo(transactionTypeParam);
+                    }
+                });
+    }
+
+    @DisplayName("유저별 입출금 내역 조회 - 성공(조건 없이 조회: 모두 조회)")
+    @Test
+    public void RetrieveTransactionByUser_Success_When_NotUseCondition() throws Exception {
+
+        // given
+        int expectedTotalElements = 12;
+        int expectedContentsSize = PAGE_SIZE_10;
+
+        assertThat(expectedTotalElements).isEqualTo(totalElements);
+
+        // when, then
+        mockMvc.perform(get("/api/v1/bank-transactions/by-user")
+                        .param("page", String.valueOf(PAGE_0))
+                        .param("size", String.valueOf(PAGE_SIZE_10)))
+                .andExpect(status().isOk())
+                .andExpect(result -> {
+
+                    String responseJson = result.getResponse().getContentAsString(StandardCharsets.UTF_8);
+
+                    PageResult<BankTransactionResponse> responsePage = objectMapper.readValue(responseJson, new TypeReference<>() {
+                    });
+
+                    // 페이지 정보 테스트
+                    AssertUtil.assertPageResult(PAGE_0, PAGE_SIZE_10, expectedTotalElements, responsePage);
+
+                    // 페이지 내용물 테스트
+                    List<BankTransactionResponse> contents = responsePage.getContents();
+
+                    assertThat(contents).hasSize(expectedContentsSize);
+
+                    for (BankTransactionResponse content : contents) {
+                        AssertUtil.assertObjPropertyNotNull(content);
+                    }
+                });
+    }
+
+    @DisplayName("은행별 입출금 내역 조회 - 실패(거래일자 형식이 잘못된 경우)")
+    @Test
+    public void RetrieveTransactionByBank_Fail_When_InvalidRequest_TransactionDate() throws Exception {
+
+        // given
+        String invalidTransactionDate = "2022-01-1";    // yyyy-MM-dd 를 지키지 않는 형식
+        String transactionType = "WITHDRAW";
+        String bankCode = BankCode.KB.getCode();
+
+        // when, then
+        mockMvc.perform(get("/api/v1/bank-transactions/by-bank")
+                        .param("transaction_date", invalidTransactionDate)
+                        .param("transaction_type", transactionType)
+                        .param("bank_code", bankCode)
+                        .param("page", String.valueOf(PAGE_0))
+                        .param("size", String.valueOf(PAGE_SIZE_10)))
+                .andExpect(status().isBadRequest())
+                .andExpect(result -> {
+                    assertThat(result.getResolvedException()).isInstanceOf(MethodArgumentTypeMismatchException.class);
+
+                    ApiError error = objectMapper.readValue(result.getResponse().getContentAsString(StandardCharsets.UTF_8), ApiError.class);
+
+                    assertThat(error.getStatus()).isEqualTo(HttpStatus.BAD_REQUEST);
+                });
+    }
+
+    @DisplayName("은행별 입출금 내역 조회 - 실패(거래타입이 올바르지 않은 경우)")
+    @Test
+    public void RetrieveTransactionByBank_Fail_When_InvalidRequest_TransactionType() throws Exception {
+
+        // given
+        String transactionDate = "2022-01-01";
+        String invalidTransactionType = "입금";    // 거래타입이 올바르지 않은 경우
+        String bankCode = BankCode.KB.getCode();
+
+        // when, then
+        mockMvc.perform(get("/api/v1/bank-transactions/by-bank")
+                        .param("transaction_date", transactionDate)
+                        .param("transaction_type", invalidTransactionType)
+                        .param("bank_code", bankCode)
+                        .param("page", String.valueOf(PAGE_0))
+                        .param("size", String.valueOf(PAGE_SIZE_10)))
+                .andExpect(status().isBadRequest())
+                .andExpect(result -> {
+                    assertThat(result.getResolvedException()).isInstanceOf(MethodArgumentTypeMismatchException.class);
+
+                    ApiError error = objectMapper.readValue(result.getResponse().getContentAsString(StandardCharsets.UTF_8), ApiError.class);
+
+                    assertThat(error.getStatus()).isEqualTo(HttpStatus.BAD_REQUEST);
+                });
+    }
+
+    @DisplayName("은행별 입출금 내역 조회 - 성공(거래일자로 조회)")
+    @Test
+    public void RetrieveTransactionByBank_Success_When_UseTransactionDate() throws Exception {
+
+        // given
+        String transactionDateParam = "2022-01-01";
+
+        int expectedTotalElements = 6;
+        int expectedContentsSize = expectedTotalElements;
+
+        // when, then
+        mockMvc.perform(get("/api/v1/bank-transactions/by-bank")
+                        .param("transaction_date", transactionDateParam)
+                        .param("page", String.valueOf(PAGE_0))
+                        .param("size", String.valueOf(PAGE_SIZE_10)))
+                .andExpect(status().isOk())
+                .andExpect(result -> {
+
+                    String responseJson = result.getResponse().getContentAsString(StandardCharsets.UTF_8);
+
+                    PageResult<BankTransactionResponse> responsePage = objectMapper.readValue(responseJson, new TypeReference<>() {
+                    });
+
+                    // 페이지 정보 테스트
+                    AssertUtil.assertPageResult(PAGE_0, PAGE_SIZE_10, expectedTotalElements, responsePage);
+
+                    // 페이지 내용물 테스트
+                    List<BankTransactionResponse> contents = responsePage.getContents();
+
+                    assertThat(contents).hasSize(expectedContentsSize);
+
+                    for (BankTransactionResponse content : contents) {
+                        AssertUtil.assertObjPropertyNotNull(content);
+                        assertThat(content.getTransactionDate()).isEqualTo(transactionDateParam);
+                    }
+                });
+    }
+
+    @DisplayName("은행별 입출금 내역 조회 - 성공(거래타입으로 조회)")
+    @Test
+    public void RetrieveTransactionByBank_Success_When_UseTransactionType() throws Exception {
+
+        // given
+        String transactionTypeParam = "DEPOSIT";
+
+        int expectedTotalElements = 8;
+        int expectedContentsSize = expectedTotalElements;
+
+        // when, then
+        mockMvc.perform(get("/api/v1/bank-transactions/by-bank")
+                        .param("transaction_type", transactionTypeParam)
+                        .param("page", String.valueOf(PAGE_0))
+                        .param("size", String.valueOf(PAGE_SIZE_10)))
+                .andExpect(status().isOk())
+                .andExpect(result -> {
+
+                    String responseJson = result.getResponse().getContentAsString(StandardCharsets.UTF_8);
+
+                    PageResult<BankTransactionResponse> responsePage = objectMapper.readValue(responseJson, new TypeReference<>() {
+                    });
+
+                    // 페이지 정보 테스트
+                    AssertUtil.assertPageResult(PAGE_0, PAGE_SIZE_10, expectedTotalElements, responsePage);
+
+                    // 페이지 내용물 테스트
+                    List<BankTransactionResponse> contents = responsePage.getContents();
+
+                    assertThat(contents).hasSize(expectedContentsSize);
+
+                    for (BankTransactionResponse content : contents) {
+                        AssertUtil.assertObjPropertyNotNull(content);
+                        assertThat(content.getTransactionType()).isEqualTo(transactionTypeParam);
+                    }
+                });
+    }
+
+    @DisplayName("은행별 입출금 내역 조회 - 성공(은행코드로 조회)")
+    @Test
+    public void RetrieveTransactionByBank_Success_When_UseBankCode() throws Exception {
+
+        // given
+        String bankCodeParam = "004";
+
+        int expectedTotalElements = 6;
+        int expectedContentsSize = expectedTotalElements;
+
+        // when, then
+        mockMvc.perform(get("/api/v1/bank-transactions/by-bank")
+                        .param("bank_code", bankCodeParam)
+                        .param("page", String.valueOf(PAGE_0))
+                        .param("size", String.valueOf(PAGE_SIZE_10)))
+                .andExpect(status().isOk())
+                .andExpect(result -> {
+
+                    String responseJson = result.getResponse().getContentAsString(StandardCharsets.UTF_8);
+
+                    PageResult<BankTransactionResponse> responsePage = objectMapper.readValue(responseJson, new TypeReference<>() {
+                    });
+
+                    // 페이지 정보 테스트
+                    AssertUtil.assertPageResult(PAGE_0, PAGE_SIZE_10, expectedTotalElements, responsePage);
+
+                    // 페이지 내용물 테스트
+                    List<BankTransactionResponse> contents = responsePage.getContents();
+
+                    assertThat(contents).hasSize(expectedContentsSize);
+
+                    for (BankTransactionResponse content : contents) {
+                        AssertUtil.assertObjPropertyNotNull(content);
+                        assertThat(content.getBankCode()).isEqualTo(bankCodeParam);
+                    }
+                });
+    }
+
+    @DisplayName("은행별 입출금 내역 조회 - 성공(모든 조건을 사용하여 조회 : 거래일자, 거래타입, 은행코드)")
+    @Test
+    public void RetrieveTransactionByBank_Success_When_UseAllCondition() throws Exception {
+
+        // given
+        String transactionType = "DEPOSIT";
+        String transactionDate = "2022-01-02";
+        String bankCodeParam = "004";
+
+        int expectedTotalElements = 2;
+        int expectedContentsSize = expectedTotalElements;
+
+        // when, then
+        mockMvc.perform(get("/api/v1/bank-transactions/by-bank")
+                        .param("bank_code", bankCodeParam)
+                        .param("transaction_date", transactionDate)
+                        .param("transaction_type", transactionType)
+                        .param("page", String.valueOf(PAGE_0))
+                        .param("size", String.valueOf(PAGE_SIZE_10)))
+                .andExpect(status().isOk())
+                .andExpect(result -> {
+
+                    String responseJson = result.getResponse().getContentAsString(StandardCharsets.UTF_8);
+
+                    PageResult<BankTransactionResponse> responsePage = objectMapper.readValue(responseJson, new TypeReference<>() {
+                    });
+
+                    // 페이지 정보 테스트
+                    AssertUtil.assertPageResult(PAGE_0, PAGE_SIZE_10, expectedTotalElements, responsePage);
+
+                    // 페이지 내용물 테스트
+                    List<BankTransactionResponse> contents = responsePage.getContents();
+
+                    assertThat(contents).hasSize(expectedContentsSize);
+
+                    for (BankTransactionResponse content : contents) {
+                        AssertUtil.assertObjPropertyNotNull(content);
+                        assertThat(content.getBankCode()).isEqualTo(bankCodeParam);
+                        assertThat(content.getTransactionType()).isEqualTo(transactionType);
+                        assertThat(content.getTransactionDate()).isEqualTo(transactionDate);
+                    }
+                });
+    }
+
+    @DisplayName("은행별 입출금 내역 조회 - 성공(아무 조건도 사용하지 않을 경우 : 모두 조회)")
+    @Test
+    public void RetrieveTransactionByBank_Success_When_NotUseCondition() throws Exception {
+
+        // given
+        int expectedTotalElements = 12;
+        int expectedContentsSize = PAGE_SIZE_10;
+
+        // when, then
+        mockMvc.perform(get("/api/v1/bank-transactions/by-bank")
+                        .param("page", String.valueOf(PAGE_0))
+                        .param("size", String.valueOf(PAGE_SIZE_10)))
+                .andExpect(status().isOk())
+                .andExpect(result -> {
+
+                    String responseJson = result.getResponse().getContentAsString(StandardCharsets.UTF_8);
+
+                    PageResult<BankTransactionResponse> responsePage = objectMapper.readValue(responseJson, new TypeReference<>() {
+                    });
+
+                    // 페이지 정보 테스트
+                    AssertUtil.assertPageResult(PAGE_0, PAGE_SIZE_10, expectedTotalElements, responsePage);
+
+                    // 페이지 내용물 테스트
+                    List<BankTransactionResponse> contents = responsePage.getContents();
+
+                    assertThat(contents).hasSize(expectedContentsSize);
+
+                    for (BankTransactionResponse content : contents) {
+                        AssertUtil.assertObjPropertyNotNull(content);
                     }
                 });
     }

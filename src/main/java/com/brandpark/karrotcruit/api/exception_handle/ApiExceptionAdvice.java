@@ -17,8 +17,8 @@ import org.springframework.web.method.annotation.MethodArgumentTypeMismatchExcep
 @RestControllerAdvice
 public class ApiExceptionAdvice {
 
-    @ExceptionHandler(CsvColumnNotValidException.class)
-    public ResponseEntity<ApiError> handleException(CsvColumnNotValidException ex) {
+    @ExceptionHandler({CsvColumnNotValidException.class, IllegalFileFormatException.class, MethodArgumentTypeMismatchException.class})
+    public ResponseEntity<ApiError> handleException(RuntimeException ex) {
 
         log.error("API Error : {}", ex.getMessage());
 
@@ -26,27 +26,6 @@ public class ApiExceptionAdvice {
 
         return createResponseEntity(apiError);
     }
-
-    @ExceptionHandler(IllegalFileFormatException.class)
-    public ResponseEntity<ApiError> handleException(IllegalFileFormatException ex) {
-
-        log.error("API Error : {}", ex.getMessage());
-
-        ApiError apiError = new ApiError(HttpStatus.BAD_REQUEST, ex.getMessage(), ex);
-
-        return createResponseEntity(apiError);
-    }
-
-    @ExceptionHandler(MethodArgumentTypeMismatchException.class)
-    public ResponseEntity<ApiError> handleException(MethodArgumentTypeMismatchException ex) {
-
-        log.error("API Error : {}", ex.getMessage());
-
-        ApiError apiError = new ApiError(HttpStatus.BAD_REQUEST, ex.getMessage(), ex.getCause());
-
-        return createResponseEntity(apiError);
-    }
-
 
     private ResponseEntity<ApiError> createResponseEntity(ApiError apiError) {
         return ResponseEntity
