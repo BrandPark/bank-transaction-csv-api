@@ -5,8 +5,8 @@ spring:
     properties:
       hibernate:
         generate_statistics: true
-#        order_inserts: true
-#        jdbc.batch_size: ${batchSize}
+        order_inserts: true
+        jdbc.batch_size: ${batchSize}
 
 batchSize: 100
 

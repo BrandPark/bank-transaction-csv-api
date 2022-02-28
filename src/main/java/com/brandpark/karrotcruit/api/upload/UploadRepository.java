@@ -24,7 +24,7 @@ import java.util.List;
 public class UploadRepository {
 
     @Value("${batchSize}")
-    private int batchSize;
+    private int batchSize = 1;
 
     private final EntityManager entityManager;
 
