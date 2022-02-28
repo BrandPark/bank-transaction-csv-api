@@ -32,7 +32,7 @@ public class UploadRepository {
     public long batchInsertBankTransactionFromCsvFile(MultipartFile file) {
 
         List<BankTransaction> batchInsertBuff = new ArrayList<>();
-        int count = batchSize;
+        int count = 0;
 
         long totalInsertedRow = 0;
 
@@ -49,11 +49,9 @@ public class UploadRepository {
                 BankTransaction transactionEntity = csvRowConvertToBankTransaction(row, rowNum);
 
                 batchInsertBuff.add(transactionEntity);
-                count--;
 
-                if(count <= 0) {
+                if(++count % batchSize == 0) {
                     totalInsertedRow += batchInsertBuff.size();
-                    count = batchSize;
 
                     flushBuff(batchInsertBuff);
                 }
@@ -93,6 +91,8 @@ public class UploadRepository {
             entityManager.persist(entity);
         }
 
+        entityManager.flush();
+        entityManager.clear();
         batchInsertBuff.clear();
     }
 }

@@ -8,3 +8,7 @@
 1645932146383|0|statement|connection 24|url jdbc:h2:mem:1a168141-e978-4f61-857d-cc45708d0b10|drop table if exists bank_transaction CASCADE |drop table if exists bank_transaction CASCADE 
 1645949658085|0|statement|connection 44|url jdbc:h2:mem:2fb28d78-abcf-424f-b5bd-3c8b2f117894|drop table if exists bank_transaction CASCADE |drop table if exists bank_transaction CASCADE 
 1645949878377|0|statement|connection 44|url jdbc:h2:mem:47d00726-47ad-4d42-826c-7f331a30a18a|drop table if exists bank_transaction CASCADE |drop table if exists bank_transaction CASCADE 
+1646018775193|0|statement|connection 44|url jdbc:h2:mem:4e920b1e-d6a6-427b-bbef-21f19c235226|drop table if exists bank_transaction CASCADE |drop table if exists bank_transaction CASCADE 
+1646018814011|0|statement|connection 44|url jdbc:h2:mem:e148a9f8-712f-4c24-8c53-740fa96952fb|drop table if exists bank_transaction CASCADE |drop table if exists bank_transaction CASCADE 
+1646018988804|0|statement|connection 44|url jdbc:h2:mem:0b157af3-8557-41b3-a9a2-bc093ebe61e9|drop table if exists bank_transaction CASCADE |drop table if exists bank_transaction CASCADE 
+1646019041735|0|statement|connection 44|url jdbc:h2:mem:982d982f-ec82-4949-9a36-dad3fa61a91b|drop table if exists bank_transaction CASCADE |drop table if exists bank_transaction CASCADE 

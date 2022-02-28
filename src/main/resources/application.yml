@@ -13,14 +13,13 @@ spring:
       hibernate:
         generate_statistics: true
         order_inserts: true
-        order_updates: true
         jdbc.batch_size: ${batchSize}
     hibernate:
       ddl-auto: create-drop
 
-batchSize: 100
+batchSize: 50
 
-logging:
-  level:
-    org.springframework.jdbc.core: debug
-    org.hibernate.SQL: debug
+#logging:
+#  level:
+#    org.springframework.jdbc.core: debug
+#    org.hibernate.SQL: debug

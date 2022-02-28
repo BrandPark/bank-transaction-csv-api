@@ -58,10 +58,10 @@ class BankTransactionApiControllerTest {
          *   - '011'은행에 입금 2번, 출금 1번
          */
         String[] csvRows = {
-                "1,2022,1,1,4,004,29000,DEPOSIT", "2,2022,1,1,4,004,29000,DEPOSIT", "3,2022,1,1,4,004,29000,WITHDRAW"
-                , "4,2022,1,1,4,011,29000,DEPOSIT", "5,2022,1,1,4,011,29000,DEPOSIT", "6,2022,1,1,4,011,29000,WITHDRAW"
-                , "7,2022,1,2,4,004,29000,DEPOSIT", "8,2022,1,2,4,004,29000,DEPOSIT", "9,2022,1,2,4,004,29000,WITHDRAW"
-                , "10,2022,1,2,4,011,29000,DEPOSIT", "11,2022,1,2,4,011,29000,DEPOSIT", "12,2022,1,2,4,011,29000,WITHDRAW"
+                "1,2022,1,1,3,011,29000,DEPOSIT", "2,2022,1,1,2,004,29000,DEPOSIT", "3,2022,1,1,1,011,29000,WITHDRAW"
+                , "4,2022,1,1,6,004,29000,DEPOSIT", "5,2022,1,1,5,011,29000,DEPOSIT", "6,2022,1,1,4,004,29000,WITHDRAW"
+                , "7,2022,1,2,9,004,29000,DEPOSIT", "8,2022,1,2,8,011,29000,DEPOSIT", "9,2022,1,2,7,004,29000,WITHDRAW"
+                , "10,2022,1,2,12,011,29000,DEPOSIT", "11,2022,1,2,11,004,29000,DEPOSIT", "12,2022,1,2,10,011,29000,WITHDRAW"
         };
 
         totalElements = csvRows.length;
@@ -125,9 +125,9 @@ class BankTransactionApiControllerTest {
                 });
     }
 
-    @DisplayName("유저별 입출금 내역 조회 - 성공(거래일자로 조회)")
+    @DisplayName("유저별 입출금 내역 조회 - 성공(거래일자로 조회: 유저ID ASC)")
     @Test
-    public void RetrieveTransactionByUser_Success_When_UseTransactionDate() throws Exception {
+    public void RetrieveTransactionByUser_Success_When_UseTransactionDate_OrderBy_UserIdASC() throws Exception {
 
         // given
         String transactionDateParam = "2022-01-01";
@@ -160,12 +160,14 @@ class BankTransactionApiControllerTest {
                         AssertUtil.assertObjPropertyNotNull(content);
                         assertThat(content.getTransactionDate()).isEqualTo(transactionDateParam);
                     }
+
+                    assertOrderByUserIdAsc(contents);
                 });
     }
 
-    @DisplayName("유저별 입출금 내역 조회 - 성공(거래타입으로 조회)")
+    @DisplayName("유저별 입출금 내역 조회 - 성공(거래타입으로 조회: {거래일자, 유저ID} ASC)")
     @Test
-    public void RetrieveTransactionByUser_Success_When_UseTransactionType() throws Exception {
+    public void RetrieveTransactionByUser_Success_When_UseTransactionType_OrderBy_TransactionDateASCAndUserIdASC() throws Exception {
 
         // given
         String transactionTypeParam = "DEPOSIT";
@@ -198,12 +200,14 @@ class BankTransactionApiControllerTest {
                         AssertUtil.assertObjPropertyNotNull(content);
                         assertThat(content.getTransactionType()).isEqualTo(transactionTypeParam);
                     }
+
+                    assertOrderByTransactionDateAscAndUserIdAsc(contents);
                 });
     }
 
-    @DisplayName("유저별 입출금 내역 조회 - 성공(모든 조건을 사용하여 조회 : 거래일자, 거래타입)")
+    @DisplayName("유저별 입출금 내역 조회 - 성공(모든 조건을 사용하여 조회 : 유저ID ASC)")
     @Test
-    public void RetrieveTransactionByUser_Success_When_UseAllCondition() throws Exception {
+    public void RetrieveTransactionByUser_Success_When_UseAllCondition_OrderBy_UserIdASC() throws Exception {
 
         // given
         String transactionDateParam = "2022-01-02";
@@ -239,12 +243,14 @@ class BankTransactionApiControllerTest {
                         assertThat(content.getTransactionDate()).isEqualTo(transactionDateParam);
                         assertThat(content.getTransactionType()).isEqualTo(transactionTypeParam);
                     }
+
+                    assertOrderByUserIdAsc(contents);
                 });
     }
 
-    @DisplayName("유저별 입출금 내역 조회 - 성공(조건 없이 조회: 모두 조회)")
+    @DisplayName("유저별 입출금 내역 조회 - 성공(조건 없이 조회: {거래일자 ASC, 유저ID ASC})")
     @Test
-    public void RetrieveTransactionByUser_Success_When_NotUseCondition() throws Exception {
+    public void RetrieveTransactionByUser_Success_When_NotUseCondition_OrderBy_TrnasactionDateASCAndUserIDAsc() throws Exception {
 
         // given
         int expectedTotalElements = 12;
@@ -275,6 +281,8 @@ class BankTransactionApiControllerTest {
                     for (BankTransactionResponse content : contents) {
                         AssertUtil.assertObjPropertyNotNull(content);
                     }
+
+                    assertOrderByTransactionDateAscAndUserIdAsc(contents);
                 });
     }
 
@@ -330,9 +338,9 @@ class BankTransactionApiControllerTest {
                 });
     }
 
-    @DisplayName("은행별 입출금 내역 조회 - 성공(거래일자로 조회)")
+    @DisplayName("은행별 입출금 내역 조회 - 성공(거래일자로 조회 : 은행코드 ASC)")
     @Test
-    public void RetrieveTransactionByBank_Success_When_UseTransactionDate() throws Exception {
+    public void RetrieveTransactionByBank_Success_When_UseTransactionDate_OrderBy_BankCodeASC() throws Exception {
 
         // given
         String transactionDateParam = "2022-01-01";
@@ -365,12 +373,14 @@ class BankTransactionApiControllerTest {
                         AssertUtil.assertObjPropertyNotNull(content);
                         assertThat(content.getTransactionDate()).isEqualTo(transactionDateParam);
                     }
+
+                    assertOrderByBankCodeAsc(contents);
                 });
     }
 
-    @DisplayName("은행별 입출금 내역 조회 - 성공(거래타입으로 조회)")
+    @DisplayName("은행별 입출금 내역 조회 - 성공(거래타입으로 조회 : {거래일자 ASC, 은행코드 ASC})")
     @Test
-    public void RetrieveTransactionByBank_Success_When_UseTransactionType() throws Exception {
+    public void RetrieveTransactionByBank_Success_When_UseTransactionType_OrderBy_TransactionDateASCAndBankCodeASC() throws Exception {
 
         // given
         String transactionTypeParam = "DEPOSIT";
@@ -403,12 +413,20 @@ class BankTransactionApiControllerTest {
                         AssertUtil.assertObjPropertyNotNull(content);
                         assertThat(content.getTransactionType()).isEqualTo(transactionTypeParam);
                     }
+
+                    for (int i = 0; i < contents.size() - 1; i++) {
+                        assertThat(contents.get(i).getTransactionDate()).isLessThanOrEqualTo(contents.get(i + 1).getTransactionDate());
+
+                        if (contents.get(i).getTransactionDate().equals(contents.get(i + 1).getTransactionDate())) {
+                            assertThat(contents.get(i).getBankCode()).isLessThanOrEqualTo(contents.get(i + 1).getBankCode());
+                        }
+                    }
                 });
     }
 
-    @DisplayName("은행별 입출금 내역 조회 - 성공(은행코드로 조회)")
+    @DisplayName("은행별 입출금 내역 조회 - 성공(은행코드로 조회 : 거래일자 ASC)")
     @Test
-    public void RetrieveTransactionByBank_Success_When_UseBankCode() throws Exception {
+    public void RetrieveTransactionByBank_Success_When_UseBankCode_OrderByTransactionDateASC() throws Exception {
 
         // given
         String bankCodeParam = "004";
@@ -441,10 +459,12 @@ class BankTransactionApiControllerTest {
                         AssertUtil.assertObjPropertyNotNull(content);
                         assertThat(content.getBankCode()).isEqualTo(bankCodeParam);
                     }
+
+                    assertOrderByTransactionDateASC(contents);
                 });
     }
 
-    @DisplayName("은행별 입출금 내역 조회 - 성공(모든 조건을 사용하여 조회 : 거래일자, 거래타입, 은행코드)")
+    @DisplayName("은행별 입출금 내역 조회 - 성공(모든 조건을 사용하여 조회)")
     @Test
     public void RetrieveTransactionByBank_Success_When_UseAllCondition() throws Exception {
 
@@ -488,9 +508,9 @@ class BankTransactionApiControllerTest {
                 });
     }
 
-    @DisplayName("은행별 입출금 내역 조회 - 성공(아무 조건도 사용하지 않을 경우 : 모두 조회)")
+    @DisplayName("은행별 입출금 내역 조회 - 성공(아무 조건도 사용하지 않을 경우 : {거래일자 ASC, 은행코드 ASC})")
     @Test
-    public void RetrieveTransactionByBank_Success_When_NotUseCondition() throws Exception {
+    public void RetrieveTransactionByBank_Success_When_NotUseCondition_OrderBy_TransactionDateASCAndBankCodeASC() throws Exception {
 
         // given
         int expectedTotalElements = 12;
@@ -519,6 +539,46 @@ class BankTransactionApiControllerTest {
                     for (BankTransactionResponse content : contents) {
                         AssertUtil.assertObjPropertyNotNull(content);
                     }
+
+                    assertOrderByTransactionDateAscAndBankCodeAsc(contents);
                 });
+    }
+
+    private void assertOrderByUserIdAsc(List<BankTransactionResponse> contents) {
+        for (int i = 0; i < contents.size() - 1; i++) {
+            assertThat(contents.get(i).getUserId()).isLessThanOrEqualTo(contents.get(i + 1).getUserId());
+        }
+    }
+
+    private void assertOrderByTransactionDateAscAndUserIdAsc(List<BankTransactionResponse> contents) {
+        for (int i = 0; i < contents.size() - 1; i++) {
+            assertThat(contents.get(i).getTransactionDate()).isLessThanOrEqualTo(contents.get(i + 1).getTransactionDate());
+
+            if (contents.get(i).getTransactionDate().equals(contents.get(i + 1).getTransactionDate())) {
+                assertThat(contents.get(i).getUserId()).isLessThan(contents.get(i + 1).getUserId());
+            }
+        }
+    }
+
+    private void assertOrderByBankCodeAsc(List<BankTransactionResponse> contents) {
+        for (int i = 0; i < contents.size() - 1; i++) {
+            assertThat(contents.get(i).getBankCode()).isLessThanOrEqualTo(contents.get(i + 1).getBankCode());
+        }
+    }
+
+    private void assertOrderByTransactionDateASC(List<BankTransactionResponse> contents) {
+        for (int i = 0; i < contents.size() - 1; i++) {
+            assertThat(contents.get(i).getTransactionDate()).isLessThanOrEqualTo(contents.get(i + 1).getTransactionDate());
+        }
+    }
+
+    private void assertOrderByTransactionDateAscAndBankCodeAsc(List<BankTransactionResponse> contents) {
+        for (int i = 0; i < contents.size() - 1; i++) {
+            assertThat(contents.get(i).getTransactionDate()).isLessThanOrEqualTo(contents.get(i + 1).getTransactionDate());
+
+            if (contents.get(i).getTransactionDate().equals(contents.get(i + 1).getTransactionDate())) {
+                assertThat(contents.get(i).getBankCode()).isLessThanOrEqualTo(contents.get(i + 1).getBankCode());
+            }
+        }
     }
 }

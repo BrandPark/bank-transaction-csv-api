@@ -46,10 +46,10 @@ class BankTransactionQueryRepositoryTest {
          *   - 농협은행(011)은행에 입금 2번, 출금 1번
          */
         String[] csvRows = {
-                "1,2022,1,1,4,004,29000,DEPOSIT", "2,2022,1,1,4,004,29000,DEPOSIT", "3,2022,1,1,4,004,29000,WITHDRAW"
-                , "4,2022,1,1,4,011,29000,DEPOSIT", "5,2022,1,1,4,011,29000,DEPOSIT", "6,2022,1,1,4,011,29000,WITHDRAW"
-                , "7,2022,1,2,4,004,29000,DEPOSIT", "8,2022,1,2,4,004,29000,DEPOSIT", "9,2022,1,2,4,004,29000,WITHDRAW"
-                , "10,2022,1,2,4,011,29000,DEPOSIT", "11,2022,1,2,4,011,29000,DEPOSIT", "12,2022,1,2,4,011,29000,WITHDRAW"
+                "1,2022,1,1,3,011,29000,DEPOSIT", "2,2022,1,1,2,004,29000,DEPOSIT", "3,2022,1,1,1,011,29000,WITHDRAW"
+                , "4,2022,1,1,6,004,29000,DEPOSIT", "5,2022,1,1,5,011,29000,DEPOSIT", "6,2022,1,1,4,004,29000,WITHDRAW"
+                , "7,2022,1,2,9,004,29000,DEPOSIT", "8,2022,1,2,8,011,29000,DEPOSIT", "9,2022,1,2,7,004,29000,WITHDRAW"
+                , "10,2022,1,2,12,011,29000,DEPOSIT", "11,2022,1,2,11,004,29000,DEPOSIT", "12,2022,1,2,10,011,29000,WITHDRAW"
         };
 
         totalElements = csvRows.length;
@@ -65,9 +65,9 @@ class BankTransactionQueryRepositoryTest {
         assertThat(saved).hasSize(totalElements);
     }
 
-    @DisplayName("유저별 거래내역 엔티티 조회 - 거래일자")
+    @DisplayName("유저별 거래내역 엔티티 조회 - 거래일자(유저ID ASC")
     @Test
-    public void FindAllBankTransactionEntityByUser_UseTransactionDate() throws Exception {
+    public void FindAllBankTransactionEntityByUser_UseTransactionDate_OrderBy_UserIdASC() throws Exception {
 
         // given
         LocalDate expectedTransactionDate = LocalDate.of(2022, 1, 1);   // 2022-01-01
@@ -94,11 +94,13 @@ class BankTransactionQueryRepositoryTest {
             assertThat(entity.getDay()).isEqualTo(expectedTransactionDate.getDayOfMonth());
             assertThat(entity.getTransactionDate()).isEqualTo(expectedTransactionDate);
         }
+
+        assertOrderByUserIdAsc(contents);
     }
 
-    @DisplayName("유저별 거래내역 엔티티 조회 - 거래타입")
+    @DisplayName("유저별 거래내역 엔티티 조회 - 거래타입({거래일자, 유저ID} ASC)")
     @Test
-    public void FindAllBankTransactionEntityByUser_UseTransactionType() throws Exception {
+    public void FindAllBankTransactionEntityByUser_UseTransactionType_OrderBy_TransactionDateASCAndUserIdASC() throws Exception {
 
         // given
         TransactionType expectedTransactionType = TransactionType.WITHDRAW;
@@ -121,11 +123,13 @@ class BankTransactionQueryRepositoryTest {
             AssertUtil.assertObjPropertyNotNull(entity);
             assertThat(entity.getTransactionType()).isEqualTo(expectedTransactionType);
         }
+
+        assertOrderByTransactionDateAscAndUserIdAsc(contents);
     }
 
-    @DisplayName("유저별 거래내역 엔티티 조회 - 거래일자, 거래타입")
+    @DisplayName("유저별 거래내역 엔티티 조회 - 거래일자, 거래타입(유저ID ASC)")
     @Test
-    public void FindAllBankTransactionEntityByUser_UseTransactionDate_And_TransactionType() throws Exception {
+    public void FindAllBankTransactionEntityByUser_UseTransactionDate_And_TransactionType_OrderBy_UserIdASC() throws Exception {
 
         // given
         LocalDate expectedTransactionDate = LocalDate.of(2022, 1, 2);
@@ -155,11 +159,13 @@ class BankTransactionQueryRepositoryTest {
 
             assertThat(entity.getTransactionType()).isEqualTo(expectedTransactionType);
         }
+
+        assertOrderByUserIdAsc(contents);
     }
 
-    @DisplayName("유저별 거래내역 엔티티 조회 - 아무 조건 없이")
+    @DisplayName("유저별 거래내역 엔티티 조회 - 아무 조건 없이({거래일자, 유저ID} ASC)")
     @Test
-    public void FindAllBankTransactionEntityByUser_NotCondition() throws Exception {
+    public void FindAllBankTransactionEntityByUser_NotCondition_OrderBy_TransactionDateASCAndUserIdASC() throws Exception {
 
         // given
         final Pageable pageable = PageRequest.of(PAGE_0, PAGE_SIZE_10);
@@ -179,11 +185,13 @@ class BankTransactionQueryRepositoryTest {
         for (BankTransaction entity : contents) {
             AssertUtil.assertObjPropertyNotNull(entity);
         }
+
+        assertOrderByTransactionDateAscAndUserIdAsc(contents);
     }
 
-    @DisplayName("은행별 거래내역 엔티티 조회 - 거래일자")
+    @DisplayName("은행별 거래내역 엔티티 조회 - 거래일자(은행코드 ASC)")
     @Test
-    public void FindAllBankTransactionEntityByBank_UseTransactionDate() throws Exception {
+    public void FindAllBankTransactionEntityByBank_UseTransactionDate_OrderBy_BankCodeASC() throws Exception {
 
         // given
         LocalDate expectedTransactionDate = LocalDate.of(2022, 1, 1);   // 2022-01-01
@@ -210,11 +218,13 @@ class BankTransactionQueryRepositoryTest {
             assertThat(entity.getDay()).isEqualTo(expectedTransactionDate.getDayOfMonth());
             assertThat(entity.getTransactionDate()).isEqualTo(expectedTransactionDate);
         }
+
+        assertOrderByBankCodeAsc(contents);
     }
 
-    @DisplayName("은행별 거래내역 엔티티 조회 - 거래타입")
+    @DisplayName("은행별 거래내역 엔티티 조회 - 거래타입({거래일자 ASC, 은행코드 ASC}")
     @Test
-    public void FindAllBankTransactionEntityByBank_UseTransactionType() throws Exception {
+    public void FindAllBankTransactionEntityByBank_UseTransactionType_OrderBy_TransactionDateASCAndBankCodeASC() throws Exception {
 
         // given
         TransactionType expectedTransactionType = TransactionType.WITHDRAW;
@@ -237,11 +247,13 @@ class BankTransactionQueryRepositoryTest {
             AssertUtil.assertObjPropertyNotNull(entity);
             assertThat(entity.getTransactionType()).isEqualTo(expectedTransactionType);
         }
+
+        assertOrderByTransactionDateAscAndBankCodeAsc(contents);
     }
 
-    @DisplayName("은행별 거래내역 엔티티 조회 - 은행코드")
+    @DisplayName("은행별 거래내역 엔티티 조회 - 은행코드(거래일자 ASC")
     @Test
-    public void FindAllBankTransactionEntityByBank_UseBankCode() throws Exception {
+    public void FindAllBankTransactionEntityByBank_UseBankCode_OrderBy_TransactionDateASC() throws Exception {
 
         // given
         BankCode expectedBankCode = BankCode.KB;
@@ -265,6 +277,8 @@ class BankTransactionQueryRepositoryTest {
 
             assertThat(entity.getBankCode()).isEqualTo(expectedBankCode);
         }
+
+        assertOrderByTransactionDateAsc(contents);
     }
 
     @DisplayName("유저별 거래내역 엔티티 조회 - 거래일자, 거래타입, 은행코드")
@@ -304,9 +318,9 @@ class BankTransactionQueryRepositoryTest {
         }
     }
 
-    @DisplayName("유저별 거래내역 엔티티 조회 - 아무 조건 없이")
+    @DisplayName("유저별 거래내역 엔티티 조회 - 아무 조건 없이(거래일자 ASC, 은행코드 ASC)")
     @Test
-    public void FindAllBankTransactionEntityByBank_NotCondition() throws Exception {
+    public void FindAllBankTransactionEntityByBank_NotCondition_OrderBy_TransactionDateASCAndBankCodeASC() throws Exception {
 
         // given
         final Pageable pageable = PageRequest.of(PAGE_0, PAGE_SIZE_10);
@@ -325,6 +339,46 @@ class BankTransactionQueryRepositoryTest {
         assertThat(contents).hasSize(expectedContentsSize);
         for (BankTransaction entity : contents) {
             AssertUtil.assertObjPropertyNotNull(entity);
+        }
+
+        assertOrderByTransactionDateAscAndBankCodeAsc(contents);
+    }
+
+    private void assertOrderByTransactionDateAsc(List<BankTransaction> contents) {
+        for (int i = 0; i < contents.size() - 1; i++) {
+            assertThat(contents.get(i).getTransactionDate()).isBeforeOrEqualTo(contents.get(i + 1).getTransactionDate());
+        }
+    }
+
+    private void assertOrderByUserIdAsc(List<BankTransaction> contents) {
+        for (int i = 0; i < contents.size() - 1; i++) {
+            assertThat(contents.get(i).getUserId()).isLessThan(contents.get(i + 1).getUserId());
+        }
+    }
+
+    private void assertOrderByBankCodeAsc(List<BankTransaction> contents) {
+        for (int i = 0; i < contents.size() - 1; i++) {
+            assertThat(contents.get(i).getBankCode().getCode()).isLessThanOrEqualTo(contents.get(i + 1).getBankCode().getCode());
+        }
+    }
+
+    private void assertOrderByTransactionDateAscAndUserIdAsc(List<BankTransaction> contents) {
+        for (int i = 0; i < contents.size() - 1; i++) {
+            assertThat(contents.get(i).getTransactionDate()).isBeforeOrEqualTo(contents.get(i + 1).getTransactionDate());
+
+            if (contents.get(i).getTransactionDate().equals(contents.get(i + 1).getTransactionDate())) {
+                assertThat(contents.get(i).getUserId()).isLessThan(contents.get(i + 1).getUserId());
+            }
+        }
+    }
+
+    private void assertOrderByTransactionDateAscAndBankCodeAsc(List<BankTransaction> contents) {
+        for (int i = 0; i < contents.size() - 1; i++) {
+            assertThat(contents.get(i).getTransactionDate()).isBeforeOrEqualTo(contents.get(i + 1).getTransactionDate());
+
+            if (contents.get(i).getTransactionDate().equals(contents.get(i + 1).getTransactionDate())) {
+                assertThat(contents.get(i).getBankCode().getCode()).isLessThanOrEqualTo(contents.get(i + 1).getBankCode().getCode());
+            }
         }
     }
 }

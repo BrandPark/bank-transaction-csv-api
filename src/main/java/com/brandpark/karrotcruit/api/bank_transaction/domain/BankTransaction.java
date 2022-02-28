@@ -15,7 +15,7 @@ import java.util.Locale;
 @Getter
 @Table(
         name = "bank_transaction"
-        , indexes = @Index(name = "idx_bank_transaction", columnList = "transaction_date, transaction_type")
+        , indexes = @Index(name = "idx_bank_transaction", columnList = "transaction_date")
 )
 @Entity
 public class BankTransaction {

@@ -33,7 +33,8 @@ public class BankTransactionQueryRepository {
             where.append(" AND bt.transactionType = :transactionType");
         }
 
-        var contentsQuery = getContentsQuery(pageable, where.toString());
+        String order = " ORDER BY bt.transactionDate, bt.userId";
+        var contentsQuery = getContentsQuery(pageable, where.toString(), order);
         var totalElementsQuery = getCountElements(where.toString());
 
         if (transactionDate != null) {
@@ -68,7 +69,8 @@ public class BankTransactionQueryRepository {
             where.append(" AND bt.bankCode = :bankCode");
         }
 
-        var contentsQuery = getContentsQuery(pageable, where.toString());
+        String order = " ORDER BY bt.transactionDate, bt.bankCode";
+        var contentsQuery = getContentsQuery(pageable, where.toString(), order);
         var totalElementsQuery = getCountElements(where.toString());
 
         if (transactionDate != null) {
@@ -92,10 +94,12 @@ public class BankTransactionQueryRepository {
         return PageResult.create(contents, pageable, totalElements);
     }
 
-    private TypedQuery<BankTransaction> getContentsQuery(Pageable pageable, final String where) {
+    private TypedQuery<BankTransaction> getContentsQuery(Pageable pageable, final String where, final String order) {
 
         return entityManager.createQuery(
-                        "SELECT bt FROM BankTransaction bt" + where
+                        "SELECT bt FROM BankTransaction bt" +
+                                where +
+                                order
                         , BankTransaction.class)
                 .setMaxResults(pageable.getPageSize())
                 .setFirstResult((int) pageable.getOffset());
